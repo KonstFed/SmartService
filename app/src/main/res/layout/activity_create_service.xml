@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CreateServiceActivity">
+
+    <!--<TextView-->
+        <!--android:id="@+id/new_service_UI_1"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_margin="@dimen/com_margin"-->
+        <!--android:textSize="@dimen/com_text_size"-->
+        <!--android:paddingLeft="@dimen/com_padding"-->
+        <!--android:text="Имя сервиса"/>-->
+    <!--<EditText-->
+        <!--android:id="@+id/new_service_name"-->
+        <!--android:layout_below="@+id/new_service_UI_1"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_margin="@dimen/com_margin"-->
+        <!--android:padding="@dimen/com_padding"-->
+        <!--android:background="@drawable/border_style"-->
+        <!--android:hint="Супер сервис"-->
+        <!--android:textSize="@dimen/com_text_size"/>-->
+    <!--<TextView-->
+        <!--android:id="@+id/new_service_UI_2"-->
+        <!--android:layout_below="@+id/new_service_name"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_margin="@dimen/com_margin"-->
+        <!--android:textSize="@dimen/com_text_size"-->
+        <!--android:paddingLeft="@dimen/com_padding"-->
+        <!--android:text="Краткое описание"/>-->
+    <!--<EditText-->
+        <!--android:id="@+id/new_service_descript"-->
+        <!--android:layout_below="@+id/new_service_UI_2"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:minHeight="100dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_margin="@dimen/com_margin"-->
+        <!--android:padding="@dimen/com_padding"-->
+        <!--android:background="@drawable/border_style"-->
+        <!--android:hint="Мой супер пупер сервис по блинам"-->
+        <!--android:gravity="left"-->
+        <!--android:textSize="@dimen/com_text_size"/>-->
+    <!--<RadioGroup-->
+        <!--android:id="@+id/new_service_UI_3"-->
+        <!--android:layout_below="@id/new_service_descript"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="vertical">-->
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
+            <!--<RadioButton-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content" />-->
+            <!--<TextView-->
+                <!--android:id="@+id/new_service_UI_radio_1"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:textSize="@dimen/com_text_size"-->
+                <!--android:paddingLeft="@dimen/com_padding"-->
+                <!--android:text="Телефон"/>-->
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
+            <!--<RadioButton-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content" />-->
+            <!--<TextView-->
+                <!--android:id="@+id/new_service_UI_radio_2"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:textSize="@dimen/com_text_size"-->
+                <!--android:paddingLeft="@dimen/com_padding"-->
+                <!--android:text="СМС"/>-->
+        <!--</LinearLayout>-->
+    <!--</RadioGroup>-->
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_menu"
+        android:layout_alignParentBottom="true"/>
+</RelativeLayout>
