@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         }
         startService(new Intent(this, AddInfoService.class));
         createExamples();
-
+        TestClaster.main();
 
 //        setBottomNavigation();
 

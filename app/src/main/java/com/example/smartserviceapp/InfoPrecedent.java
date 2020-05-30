@@ -4,28 +4,28 @@ import android.location.Location;
 
 import java.util.ArrayList;
 
-public class VectorSVM {
+public class InfoPrecedent {
+    Cluster hostCluster;
+
     double time;
     double lastLat;
     double lastLong;
     double curLat;
     double curLong;
-    public boolean isReady = false;
-    private int cnt;
-    public VectorSVM(double time, double lastLat, double lastLong, double curLat, double curLong) {
+    public InfoPrecedent(double time, double lastLat, double lastLong, double curLat, double curLong) {
         this.time = time;
         this.lastLat = lastLat;
         this.lastLong = lastLong;
         this.curLat = curLat;
         this.curLong = curLong;
-        cnt=0;
+        hostCluster = null;
     }
-    public VectorSVM() {
+    public InfoPrecedent() {
         this.lastLat = lastLat;
         this.lastLong = lastLong;
         this.curLat = curLat;
         this.curLong = curLong;
-        cnt = 0;
+        hostCluster = null;
     }
     public ArrayList<Double> getVector()
     {
@@ -39,15 +39,10 @@ public class VectorSVM {
     }
     public void addNewCoord(Location loc)
     {
-        cnt+=1;
         lastLat = curLat;
         lastLong = curLong;
-
         curLat = loc.getLatitude();
         curLong = loc.getLongitude();
-        if (cnt>2)
-        {
-            isReady = true;
-        }
+
     }
 }

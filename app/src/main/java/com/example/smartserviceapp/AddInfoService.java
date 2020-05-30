@@ -23,7 +23,7 @@ public class AddInfoService extends Service {
     int currentTime;
     LocationManager mlocmag;
     LocationListener mlocList;
-    VectorSVM vectorSVM;
+    InfoPrecedent vectorSVM;
 //    private double lat, longn;
 
     @Override
@@ -34,7 +34,7 @@ public class AddInfoService extends Service {
 
 //        currentTime = Calendar.getInstance().get()
 
-        vectorSVM = new VectorSVM();
+        vectorSVM = new InfoPrecedent();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
