@@ -6,25 +6,26 @@ import java.util.ArrayList;
 
 public class InfoPrecedent {
     Cluster hostCluster;
-
+    String label;
     double time;
     double lastLat;
     double lastLong;
     double curLat;
     double curLong;
-    public InfoPrecedent(double time, double lastLat, double lastLong, double curLat, double curLong) {
+    public InfoPrecedent(double time, double lastLat, double lastLong, double curLat, double curLong, String label) {
         this.time = time;
         this.lastLat = lastLat;
         this.lastLong = lastLong;
         this.curLat = curLat;
         this.curLong = curLong;
+        this.label = label;
         hostCluster = null;
     }
     public InfoPrecedent() {
-        this.lastLat = lastLat;
-        this.lastLong = lastLong;
-        this.curLat = curLat;
-        this.curLong = curLong;
+        this.lastLat = 1000.0;
+        this.lastLong = 1000.0;
+        this.curLat = 1000.0;
+        this.curLong = 1000.0;
         hostCluster = null;
     }
     public ArrayList<Double> getVector()

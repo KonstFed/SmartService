@@ -2,12 +2,12 @@ package com.example.smartserviceapp;
 
 public class SmartService {
     String name;
-    String description;
     ServiceTask curTask;
-    public SmartService(String name, String description, ServiceTask curTask) {
+    SmartServiceClustering clustering;
+    int id;
+    public SmartService(String name, ServiceTask curTask, int id) {
         this.name = name;
-        this.description = description;
         this.curTask = curTask;
-
+        this.id = id;
     }
 }
