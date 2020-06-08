@@ -9,17 +9,18 @@ import java.util.Collections;
 
 public class SmartServiceClustering {
     ArrayList<InfoPrecedent> precedents;
-    ArrayList<ArrayList<InfoPrecedent>> distMatrix;
-    Boolean trained = false;
+    Boolean trained;
     Double thresh;
     int amountCluster;
     public SmartServiceClustering() {
         precedents = new ArrayList<>();
         amountCluster = 0;
+        trained = false;
     }
     public SmartServiceClustering(ArrayList<InfoPrecedent> precedents) {
         this.precedents = precedents;
         amountCluster = 0;
+        trained = false;
     }
 //    public void addPrecedent(InfoPrecedent precedent)
 //    {
@@ -38,6 +39,14 @@ public class SmartServiceClustering {
                 distances.add(curdist);
                 distMatrix[i][j] = curdist;
                 distMatrix[j][i] = curdist;
+                if (precedents.get(j).label.equals("ok"))
+                {
+                    yes_prec = true;
+                }
+                else if (precedents.get(j).label.equals("no"))
+                {
+                    no_prec = true;
+                }
             }
             if (precedents.get(i).label.equals("ok"))
             {

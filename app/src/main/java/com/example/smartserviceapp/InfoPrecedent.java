@@ -12,6 +12,7 @@ public class InfoPrecedent {
     double lastLong;
     double curLat;
     double curLong;
+    double accuracyRadius;
     public InfoPrecedent(double time, double lastLat, double lastLong, double curLat, double curLong, String label) {
         this.time = time;
         this.lastLat = lastLat;
@@ -26,6 +27,7 @@ public class InfoPrecedent {
         this.lastLong = 1000.0;
         this.curLat = 1000.0;
         this.curLong = 1000.0;
+        accuracyRadius = -1.0;
         hostCluster = null;
     }
     public ArrayList<Double> getVector()
@@ -44,6 +46,5 @@ public class InfoPrecedent {
         lastLong = curLong;
         curLat = loc.getLatitude();
         curLong = loc.getLongitude();
-
     }
 }

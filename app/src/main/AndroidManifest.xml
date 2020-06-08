@@ -2,25 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.smartserviceapp">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="false"
-        android:largeHeap="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".CreateServiceActivity"></activity>
-
-        <service
-            android:name=".AddInfoService"
-            android:enabled="true"
-            android:exported="true" />
+        <activity
+            android:name=".CreateServiceActivity"
+            android:label="@string/new_activity_name"></activity>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -29,6 +23,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".AddInfoService"
+            android:enabled="true"
+            android:exported="true" />
     </application>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 </manifest>

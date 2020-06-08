@@ -3,10 +3,8 @@ package com.example.smartserviceapp;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -18,7 +16,7 @@ public class DBPrecedents extends SQLiteOpenHelper {
     public DBPrecedents(Context context) {
         super(context, "myDB",null,1);
         this.context = context;
-        this.db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
 
         try {
             Cursor c = db.query(table_name_services, null, null, null, null, null, null);
@@ -41,7 +39,6 @@ public class DBPrecedents extends SQLiteOpenHelper {
     }
     public ArrayList<InfoPrecedent> loadPrecedents(int serviceId)
     {
-        db = this.getReadableDatabase();
         ArrayList<InfoPrecedent> tmp = new ArrayList<>();
         Cursor c = db.query(table_name_precedents, null, null, null, null, null, null);
         if (c.moveToFirst())
@@ -69,20 +66,16 @@ public class DBPrecedents extends SQLiteOpenHelper {
             }while (c.moveToNext());
         }
         c.close();
-        db.close();
         return tmp;
     }
     public void addService(SmartService smartService) {
-        db = this.getWritableDatabase();
         db.beginTransaction();
         db.insert(table_name_services, null, smartService.curTask.fillCV);
         db.setTransactionSuccessful();
         db.endTransaction();
-        db.close();
     }
     public ArrayList<SmartService> loadServices()
     {
-        db = this.getReadableDatabase();
         ArrayList<SmartService> tmp = new ArrayList<>();
         Cursor c = db.query(table_name_services, null, null, null, null, null, null);
         if (c.moveToFirst())
@@ -98,29 +91,27 @@ public class DBPrecedents extends SQLiteOpenHelper {
             do {
 
                 String type = c.getString(typeIndex);
-                SmartService smartService = new SmartService(c.getString(nameIndex),null,cnt);;
+                SmartService smartService = new SmartService(context,c.getString(nameIndex),cnt);;
                 ServiceTask stask;
                 switch (type)
                 {
                     case "PHONE_CALL":
-                        stask = new ServicePhoneTask(context,smartService,c.getString(phoneIndex));
+                        stask = new ServicePhoneTask(context,c.getString(phoneIndex));
                         break;
                     default:
                         stask = null;
                 }
-                smartService.curTask = stask;
+                smartService.addTask(stask);
                 tmp.add(smartService);
                 cnt++;
             }while (c.moveToNext());
         }
         c.close();
-        db.close();
         return tmp;
     }
     public int howMuch()
     {
-        db = this.getReadableDatabase();
-        int c1 = 0;
+         int c1 = 0;
         Cursor c = db.query(table_name_precedents, null, null, null, null, null, null);
         if (c.moveToFirst())
         {
@@ -137,7 +128,6 @@ public class DBPrecedents extends SQLiteOpenHelper {
             }while (c.moveToNext());
         }
         c.close();
-        db.close();
         return c1;
 //        int numRows = DatabaseUtils.longForQuery(db, "SELECT COUNT(*) FROM " + table_name_precedents, null);
 
@@ -145,7 +135,6 @@ public class DBPrecedents extends SQLiteOpenHelper {
     public void addPrecedent(InfoPrecedent infoPrecedent,int serviceId)
     {
 
-        db = this.getWritableDatabase();
 
         db.beginTransaction();
 
@@ -160,11 +149,10 @@ public class DBPrecedents extends SQLiteOpenHelper {
         db.insert(table_name_precedents, null, cv);
         db.setTransactionSuccessful();
         db.endTransaction();
-        db.close();
     }
     public void createTableServices()
     {
-        db = this.getWritableDatabase();
+//        db = this.getWritableDatabase();
 
         db.execSQL("create table " +table_name_services+ "("
                 + "id integer primary key autoincrement,"
@@ -173,15 +161,14 @@ public class DBPrecedents extends SQLiteOpenHelper {
                 + "phone text,"
                 + "message text"
                 + ");");
-        SmartService s = new SmartService("SHLAGBAUM",null,0);
-        ServicePhoneTask servicePhoneTask = new ServicePhoneTask(context,s,"+79501320841");
-        s.curTask = servicePhoneTask;
+        SmartService s = new SmartService(context,"SHLAGBAUM",0);
+        ServicePhoneTask servicePhoneTask = new ServicePhoneTask(context,"+79501320841");
+        s.addTask(servicePhoneTask);
         db.insert(table_name_services,null,servicePhoneTask.fillCV);
-        db.close();
     }
     public void createTablePrecedents()
     {
-        db = this.getWritableDatabase();
+//        db = this.getWritableDatabase();
         db.execSQL("create table Precedents ("
                 + "id integer primary key autoincrement,"
                 + "service_id integer,"
@@ -191,14 +178,12 @@ public class DBPrecedents extends SQLiteOpenHelper {
                 + "v3 real,"
                 + "v4 real,"
                 + "v5 real" + ");");
-        db.close();
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
         this.db = db;
         createTablePrecedents();
         createTableServices();
-
     }
 
     @Override
@@ -207,9 +192,7 @@ public class DBPrecedents extends SQLiteOpenHelper {
     }
     public void clearPrecedents()
     {
-        db = this.getWritableDatabase();
         db.execSQL("drop table "+table_name_precedents);
         createTablePrecedents();
-        db.close();
     }
 }

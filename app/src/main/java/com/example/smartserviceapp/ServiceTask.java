@@ -8,11 +8,10 @@ public abstract class ServiceTask {
     public ContentValues fillCV;
     SmartService hostSmartService;
 
-    public ServiceTask(Context context,SmartService hostSmartService) {
+    public ServiceTask(Context context) {
         this.context = context;
-        this.hostSmartService = hostSmartService;
     }
-
+//    public abstract void
     public abstract void execute();
 
 }

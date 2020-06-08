@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -29,15 +30,22 @@ public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
 
         View view=inflater.inflate(this.layout, parent, false);
         TextView textView = (TextView) view.findViewById(R.id.service_name);
-        ImageButton imageButton = (ImageButton) view.findViewById(R.id.service_button);
-
+        ImageButton imageButton = (ImageButton) view.findViewById(R.id.service_button_yes);
+        Button b = (Button) view.findViewById(R.id.service_button_no);
         final SmartService service = services.get(position);
 
         textView.setText(service.name);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                service.noPrecedent();
+            }
+        });
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                service.curTask.execute();
+                service.execute();
+                service.yesPrecedent();
             }
         });
 
