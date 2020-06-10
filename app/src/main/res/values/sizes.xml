@@ -2,4 +2,5 @@
 <resources>
     <dimen name="text_size_h2">30sp</dimen>
     <dimen name="st_padding">100px</dimen>
+    <dimen name="radius">10dp</dimen>
 </resources>

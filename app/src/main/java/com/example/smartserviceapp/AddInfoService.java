@@ -50,14 +50,9 @@ public class AddInfoService extends Service {
         services = new ArrayList<>();
         updateFromDB();
 
-        mlocmag = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         mlocList = new MyLocationList();
-        lastLocation = mlocmag.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (lastLocation == null) {
-            lastLocation = mlocmag.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        }
+        ((MyLocationList) mlocList).setup();
         timer  = new Timer();       // location.
-        mlocmag.requestLocationUpdates(LocationManager.GPS_PROVIDER, UPDATE_INTERVAL, 0,mlocList);
     }
 
     @Override
@@ -192,7 +187,6 @@ public class AddInfoService extends Service {
         if (timer != null) {
             timer.cancel();
         }
-        mlocmag.removeUpdates(mlocList);
         dbPrecedents.close();
     }
 
@@ -213,48 +207,129 @@ public class AddInfoService extends Service {
 //        Toast.makeText(getApplicationContext(),vectorSVM.curLat + " : " + vectorSVM.curLong,Toast.LENGTH_SHORT).show();
 //        Log.d("meow-coord",vectorSVM.curLat + " : " + vectorSVM.curLong);
     }
+    private void checkPrecedent()
+    {
+        if (lastLocation != null)
+        {
+            if (lastLocation.getAccuracy()>45)
+            {
+                return;
+            }
+            newPrecedent();
+//                    SmartService smartService = services.get(0);
+            Log.d("meow","i work");
+            Toast.makeText(getApplicationContext(),"I WORK",Toast.LENGTH_SHORT).show();
+            if (vectorSVM.lastLong != 1000.0) {
+//                        Log.d("meow","I am working");
+                for (int i = 0; i < services.size(); i++) {
+                    testVector(i);
+                    if (services.get(i).isReload && testVector(i)) {
+                        Calendar rightNow = Calendar.getInstance();
+
+                        Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: "  +  debug_computeDistnace(i));
+                        services.get(i).execute();
+                    }
+                }
+            }
+            else
+            {
+                Toast.makeText(getApplicationContext(),"LOC:WORK",Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    }
     public class MyLocationList implements LocationListener {
 
+
+        // flag for GPS status
+        boolean isGPSEnabled = false;
+
+        // flag for network status
+        boolean isNetworkEnabled = false;
+
+        // flag for GPS status
+        boolean canGetLocation = false;
+
+        Location location; // location
+        double latitude; // latitude
+        double longitude; // longitude
+
+        // The minimum distance to change Updates in meters
+        private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 0 meters
+
+        // The minimum time between updates in milliseconds
+        private static final long MIN_TIME_BW_UPDATES = 1000 * 3; // 4 sec
+
+        // Declaring a Location Manager
+        protected LocationManager locationManager;
         public void onLocationChanged(Location arg0) {
             lastLocation = arg0;
-            if (lastLocation != null)
-            {
-                if (lastLocation.getAccuracy()>20)
-                {
-                    return;
-                }
-                newPrecedent();
-//                    SmartService smartService = services.get(0);
+            checkPrecedent();
+//            UpdateWithNewLocation(arg0);
+        }
+        public void setup()
+        {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            try {
+                locationManager = (LocationManager) getApplicationContext()
+                        .getSystemService(LOCATION_SERVICE);
 
-                if (vectorSVM.lastLong != 1000.0) {
-//                        Log.d("meow","I am working");
-                    for (int i = 0; i < services.size(); i++) {
-                        testVector(i);
-                        if (services.get(i).isReload && testVector(i)) {
-                            Calendar rightNow = Calendar.getInstance();
+                // getting GPS status
+                isGPSEnabled = locationManager
+                        .isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-                            Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: "  +  debug_computeDistnace(i));
-                            services.get(i).execute();
+                // getting network status
+                isNetworkEnabled = locationManager
+                        .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+                if (!isGPSEnabled && !isNetworkEnabled) {
+                    // no network provider is enabled
+                } else {
+                    this.canGetLocation = true;
+                    // First get location from Network Provider
+                    if (isNetworkEnabled) {
+                        locationManager.requestLocationUpdates(
+                                LocationManager.NETWORK_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        Log.d("meow", "Network-location");
+                        if (locationManager != null) {
+                            lastLocation = locationManager
+                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        }
+                    }
+                    // if GPS Enabled get lat/long using GPS Services
+                    if (isGPSEnabled) {
+                        if (lastLocation == null) {
+                            locationManager.requestLocationUpdates(
+                                    LocationManager.GPS_PROVIDER,
+                                    MIN_TIME_BW_UPDATES,
+                                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                            Log.d("meow", "GPS Enabled Location");
+                            if (locationManager != null) {
+                                lastLocation = locationManager
+                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            }
                         }
                     }
                 }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),"LOC:WORK",Toast.LENGTH_SHORT).show();
 
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-//            UpdateWithNewLocation(arg0);
         }
-
         public void onProviderDisabled(String provider) {
             Toast.makeText(getApplicationContext(), "GPS Disable ",
                     Toast.LENGTH_LONG).show();
+            setup();
         }
 
         public void onProviderEnabled(String provider) {
             Toast.makeText(getApplicationContext(), "GPS enabled",
                     Toast.LENGTH_LONG).show();
+            setup();
         }
 
         public void onStatusChanged(String provider, int status, Bundle extras) {

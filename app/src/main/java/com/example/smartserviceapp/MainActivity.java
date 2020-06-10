@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this,AddInfoService.class);
             intent.putExtra("status","UPDATE_DB");
             startService(intent);
+//            startService(intent);
+//            intent.putExtra("status","UPDATE_DB");
         }
 
 
