@@ -4,12 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -26,35 +28,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         servicesList = (ListView) findViewById(R.id.services_list);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED )
-        {
-            String[] mre = new String[1];
-            mre[0] = Manifest.permission.CALL_PHONE;
-            requestPermissions(mre,4);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            String[] mre = new String[3];
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED  || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED  || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            String[] mre = new String[4];
             mre[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             mre[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
             mre[2] = Manifest.permission.CALL_PHONE;
+            mre[3] = Manifest.permission.FOREGROUND_SERVICE;
             requestPermissions(mre,4);
 
         }
-        else
-        {
-            Intent intent = new Intent(this,AddInfoService.class);
-            intent.putExtra("status","UPDATE_DB");
-            startService(intent);
-//            startService(intent);
-//            intent.putExtra("status","UPDATE_DB");
-        }
+        Switch sw = (Switch) findViewById(R.id.service_switch);
 
+        Intent intent = new Intent(this,AddInfoService.class);
+        intent.putExtra("status","UPDATE_DB");
+        ContextCompat.startForegroundService(this, intent);
 
         dbPrecedents = new DBPrecedents(this);
-//        dbPrecedents.clearPrecedents();
         services = dbPrecedents.loadServices();
         SmartServiceAdapter smartServiceAdapter = new SmartServiceAdapter(this,R.layout.list_item,services);
         servicesList.setAdapter(smartServiceAdapter);
+
         Intent ift = getIntent();
         String s = "";
         if (ift.hasExtra("debug"))
@@ -62,8 +56,6 @@ public class MainActivity extends AppCompatActivity {
             s = ift.getStringExtra("debug");
 
         }
-        TextView t = (TextView) findViewById(R.id.debug);
-        t.setText(s);
         InfoPrecedent yi1 = new InfoPrecedent();
         yi1.curLat = 52.211958;
         yi1.curLong = 104.242408;
@@ -125,20 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
         setBottomNavigation();
 
-        Button hm = (Button) findViewById(R.id.howmuch);
-        Button del = (Button) findViewById(R.id.del);
-        hm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                show();
-            }
-        });
-        del.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dbPrecedents.clearPrecedents();
-            }
-        });
+
     }
     public void show()
     {
@@ -150,6 +129,10 @@ public class MainActivity extends AppCompatActivity {
         ImageButton home = (ImageButton) findViewById(R.id.home);
         ImageButton add_service = (ImageButton) findViewById(R.id.new_service);
         ImageButton settings = (ImageButton) findViewById(R.id.settings);
+
+        home.setImageResource(R.drawable.ic_home_black_24dp);
+        add_service.setImageResource(R.drawable.ic_add_box_anactive_24dp);
+        settings.setImageResource(R.drawable.ic_settings_inactive_24dp);
 
         add_service.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -3,73 +3,137 @@
     android:id="@+id/item_service"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/item_service_style"
     android:orientation="vertical">
-    <TextView
-        android:id="@+id/service_name"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:textSize="@dimen/text_size_h2"
-        android:padding="10dp"
-        android:gravity="left"
-        android:background="@drawable/border_style"
-        android:text="otladka"
-        />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <ImageButton
-
-            android:id="@+id/service_button_yes"
-            android:background="@null"
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="0.2"
-            android:src="@drawable/ic_play_arrow_black_24dp"
-            android:scaleType="fitCenter"
-
-            />
-        <ImageButton
-            android:id="@+id/service_button_no"
-            android:src="@drawable/ic_block_black_24dp"
-            android:scaleType="fitCenter"
-            android:background="@null"
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="0.2"
-            android:textSize="30sp"
-            />
+        android:orientation="vertical"
+        android:layout_margin="20dp"
+        android:background="@drawable/item_service_style">
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:orientation="vertical">
+            android:background="@drawable/border_style"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/service_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:textSize="@dimen/text_size_h2"
+                android:padding="10dp"
+                android:gravity="left"
+                android:text="otladka"
+                >
+            </TextView>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.1"
+                android:orientation="vertical"
+                android:minHeight="100dp"
+                >
+                <ImageButton
+                    android:id="@+id/rewrite"
+                    android:src="@drawable/ic_rewrite_pen"
+                    android:background="@null"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="10dp"
+                    />
+
+
+            </LinearLayout>
+
 
         </LinearLayout>
+
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_weight="0.2"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
             <ImageButton
-                android:id="@+id/rewrite"
-                android:src="@drawable/ic_rewrite_pen"
+
+                android:id="@+id/service_button_yes"
                 android:background="@null"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:layout_height="70dp"
+                android:src="@drawable/ic_play_arrow_black_24dp"
+                android:scaleType="fitCenter"
+
                 />
+
+
+            <ImageButton
+                android:id="@+id/service_button_no"
+                android:src="@drawable/ic_block_black_24dp"
+                android:scaleType="fitCenter"
+                android:background="@null"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_weight="0.3"
+                android:textSize="30sp"
+                />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:orientation="vertical">
+
+            </LinearLayout>
+
             <ImageButton
                 android:id="@+id/statistics"
                 android:src="@drawable/ic_stats"
                 android:background="@null"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:layout_height="fill_parent"
                 />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:layout_height="wrap_content"
+                style="@style/ExplainText"
+                android:text="Выполнить"
+                >
+
+            </TextView>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="0.3"
+                android:layout_height="wrap_content"
+                style="@style/ExplainText"
+                android:text="нет"
+                >
+            </TextView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:orientation="vertical">
+            </LinearLayout>
+
+            <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.3"
+            android:layout_height="wrap_content"
+            style="@style/ExplainText"
+            android:text="Статистика"/>
+
         </LinearLayout>
     </LinearLayout>
+
 
 </LinearLayout>

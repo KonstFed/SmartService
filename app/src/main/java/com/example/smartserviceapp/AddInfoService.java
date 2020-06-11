@@ -1,6 +1,10 @@
 package com.example.smartserviceapp;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,9 +12,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,6 +29,7 @@ import java.util.TimerTask;
 
 public class AddInfoService extends Service {
     private static final int servicedelay = 300000;
+    public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
     private Timer timer;
     private long UPDATE_INTERVAL;
@@ -39,12 +46,22 @@ public class AddInfoService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        createNotificationChannel();
 
-        vectorSVM = new InfoPrecedent();
-
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, notificationIntent, 0);
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Foreground Service")
+                .setContentText("I am super cat")
+                .setSmallIcon(R.drawable.ic_stats)
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(1, notification);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        vectorSVM = new InfoPrecedent();
         UPDATE_INTERVAL = 3000;
         dbPrecedents = new DBPrecedents(getApplicationContext());
         services = new ArrayList<>();
@@ -53,6 +70,17 @@ public class AddInfoService extends Service {
         mlocList = new MyLocationList();
         ((MyLocationList) mlocList).setup();
         timer  = new Timer();       // location.
+    }
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
     }
 
     @Override
@@ -218,7 +246,6 @@ public class AddInfoService extends Service {
             newPrecedent();
 //                    SmartService smartService = services.get(0);
             Log.d("meow","i work");
-            Toast.makeText(getApplicationContext(),"I WORK",Toast.LENGTH_SHORT).show();
             if (vectorSVM.lastLong != 1000.0) {
 //                        Log.d("meow","I am working");
                 for (int i = 0; i < services.size(); i++) {
@@ -258,7 +285,7 @@ public class AddInfoService extends Service {
         private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 0 meters
 
         // The minimum time between updates in milliseconds
-        private static final long MIN_TIME_BW_UPDATES = 1000 * 3; // 4 sec
+        private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 min
 
         // Declaring a Location Manager
         protected LocationManager locationManager;
