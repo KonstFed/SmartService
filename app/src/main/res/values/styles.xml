@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/dark_gray</item>
-        <item name="android:color">@color/text_color_main</item>
+        <item name="android:color">@color/text_color</item>
     </style>
     <style name="ServiceButton">
         <item name="android:background">#33FF66</item>
@@ -15,7 +15,7 @@
     </style>
     <style name="ExplainText">
         <item name="android:gravity">center</item>
-        <item name="android:color">@color/text_color_main</item>
+        <item name="android:color">@color/text_color</item>
     </style>
     <style name="bottomNavigationButton">
         <item name="android:background">@null</item>
@@ -25,5 +25,6 @@
         <item name="colorControlActivated">@color/red</item>
         <item name="colorControlNormal">@color/dark_gray</item>
     </style>
+
 
 </resources>

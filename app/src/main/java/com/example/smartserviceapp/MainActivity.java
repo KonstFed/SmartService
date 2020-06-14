@@ -1,14 +1,24 @@
 package com.example.smartserviceapp;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.SyncStateContract;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -17,10 +27,12 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    ListView servicesList;
-    private ArrayList<SmartService> services;
+    public static final String CHANNEL_ID = "ForegroundServiceChannel";
     private final int REQUEST_CODE_NEW_SERVICE = 1;
     private final int OK_RESULT = 1;
+    ListView servicesList;
+    private ArrayList<SmartService> services;
+
     DBPrecedents dbPrecedents;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,22 +41,57 @@ public class MainActivity extends AppCompatActivity {
 
         servicesList = (ListView) findViewById(R.id.services_list);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED  || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED  || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             String[] mre = new String[4];
             mre[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             mre[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
             mre[2] = Manifest.permission.CALL_PHONE;
             mre[3] = Manifest.permission.FOREGROUND_SERVICE;
-            requestPermissions(mre,4);
+            requestPermissions(mre, 4);
 
         }
-        Switch sw = (Switch) findViewById(R.id.service_switch);
+        SwitchCompat sw = (SwitchCompat) findViewById(R.id.service_switch);
 
-        Intent intent = new Intent(this,AddInfoService.class);
-        intent.putExtra("status","UPDATE_DB");
-        ContextCompat.startForegroundService(this, intent);
+        sw.setChecked(isMyServiceRunning(AddInfoService.class));
 
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Intent intent = new Intent(getApplicationContext(), AddInfoService.class);
+
+
+                for (int i = 0; i < services.size(); i++) {
+                    services.get(i).isTrackerOn = isChecked;
+                }
+                if (isChecked)
+                {
+
+//                    intent.putExtra("status","UPDATE_DB");
+////                    ContextCompat.startForegroundService(getApplicationContext(), intent);
+//                    startService(intent);
+                    startForegroundService();
+                }
+                else
+                {
+                    intent.putExtra("status","KILL");
+
+                    startService(intent);
+                }
+            }
+        });
+        Intent intent = getIntent();
+        if (intent != null)
+        {
+            if (intent.hasExtra("status"))
+            {
+                if (intent.getStringExtra("status").equals("update") && sw.isChecked())
+                {
+                    startForegroundService();
+                }
+            }
+        }
         dbPrecedents = new DBPrecedents(this);
+        Log.d("meow","db precedents" + dbPrecedents.howMuch());
         services = dbPrecedents.loadServices();
         SmartServiceAdapter smartServiceAdapter = new SmartServiceAdapter(this,R.layout.list_item,services);
         servicesList.setAdapter(smartServiceAdapter);
@@ -119,6 +166,21 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private void startForegroundService()
+    {
+        Intent serviceIntent = new Intent(this, AddInfoService.class);
+        serviceIntent.putExtra("status", "UPDATE-DB");
+        ContextCompat.startForegroundService(this, serviceIntent);
+    }
     public void show()
     {
         Toast.makeText(getApplicationContext(),Integer.toString(dbPrecedents.howMuch()),Toast.LENGTH_SHORT).show();
@@ -144,4 +206,28 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+//    @Override
+//    protected void onDestroy() {
+//        Log.d("meow","MainActivity: onDestroy");
+//        Intent broadcastIntent = new Intent();
+//        broadcastIntent.setAction("restartservice");
+//        broadcastIntent.setClass(this, Restarter.class);
+//        this.sendBroadcast(broadcastIntent);
+//        Intent i = new Intent(this,AddInfoService.class);
+//        stopService(i);
+//        super.onDestroy();
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        Log.d("meow","MainActivity: onStop");
+//        Intent broadcastIntent = new Intent();
+//        broadcastIntent.setAction("restartservice");
+//        broadcastIntent.setClass(getApplicationContext(), Restarter.class);
+//        this.sendBroadcast(broadcastIntent);
+//        Intent i = new Intent(this,AddInfoService.class);
+//        stopService(i);
+//        super.onStop();
+//    }
 }

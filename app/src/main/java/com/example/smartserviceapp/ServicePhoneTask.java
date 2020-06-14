@@ -22,7 +22,7 @@ public class ServicePhoneTask extends ServiceTask {
         fillCV = new ContentValues();
         this.context = context;
         this.phone = phone;
-
+        super.type = "phone";
         fillCV.put("type", "PHONE_CALL");
         fillCV.put("phone", phone);
         fillCV.put("message", "");
@@ -38,5 +38,11 @@ public class ServicePhoneTask extends ServiceTask {
         Intent myIntent = new Intent(Intent.ACTION_CALL,Uri.parse("tel:"+phone));
         context.startActivity(myIntent);
 
+    }
+
+    @Override
+    public String getData() {
+
+        return phone;
     }
 }

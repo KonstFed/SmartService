@@ -1,6 +1,8 @@
 package com.example.smartserviceapp;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,10 +17,19 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.provider.SyncStateContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,12 +38,11 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AddInfoService extends Service {
-    private static final int servicedelay = 300000;
-    public static final String CHANNEL_ID = "ForegroundServiceChannel";
+import static com.example.smartserviceapp.MainActivity.CHANNEL_ID;
 
-    private Timer timer;
-    private long UPDATE_INTERVAL;
+public class AddInfoService extends Service {
+    private static final long interval  = 1000*10;
+    private static final int notif_id = 145;
     int currentTime;
     private Location lastLocation;
 
@@ -41,36 +51,50 @@ public class AddInfoService extends Service {
     LocationListener mlocList;
     InfoPrecedent vectorSVM;
     DBPrecedents dbPrecedents;
-
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationCallback locationCallback;
+    Boolean needKill;
+    Boolean alive = false;
     @Override
     public void onCreate() {
         super.onCreate();
 
-        createNotificationChannel();
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,
-                0, notificationIntent, 0);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText("I am super cat")
-                .setSmallIcon(R.drawable.ic_stats)
-                .setContentIntent(pendingIntent)
-                .build();
-        startForeground(1, notification);
+
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        alive = true;
+        needKill = false;
+        setForeground();
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+//            setForeground();
+//        else
+//            startForeground(1, new Notification());
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        locationCallback =  new LocationCallback()
+
+        {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                lastLocation = locationResult.getLastLocation();
+                checkPrecedent();
+            }
+
+        };
+        requestLocation();
         vectorSVM = new InfoPrecedent();
-        UPDATE_INTERVAL = 3000;
         dbPrecedents = new DBPrecedents(getApplicationContext());
         services = new ArrayList<>();
         updateFromDB();
 
-        mlocList = new MyLocationList();
-        ((MyLocationList) mlocList).setup();
-        timer  = new Timer();       // location.
+//        mlocList = new MyLocationList();
+//        ((MyLocationList) mlocList).setup();
     }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
@@ -82,52 +106,98 @@ public class AddInfoService extends Service {
             manager.createNotificationChannel(serviceChannel);
         }
     }
+    private void setForeground()
+    {
+        createNotificationChannel();
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, notificationIntent, 0);
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Foreground Service")
+                .setContentText("volt is cute")
+                .setSmallIcon(R.drawable.ic_stats)
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(notif_id, notification);
 
+    }
+    private void requestLocation()
+    {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        LocationRequest locationRequest =   new LocationRequest();
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setInterval(interval);
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,Looper.myLooper());
+    }
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d("meow","OnTaskRemoved");
+        getBackToLife();
+
+    }
+    private void getBackToLife()
+    {
+        Log.d("meow","I be back");
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction("restartservice");
+        broadcastIntent.setClass(this, Restarter.class);
+        this.sendBroadcast(broadcastIntent);
+
+
+    }
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         int curID;
-        switch (intent.getStringExtra("status"))
-        {
-            case "UPDATE_DB":
-                updateFromDB();
-                break;
-            case "YES_REQUEST":
-                newPrecedent();
-                vectorSVM.label = "ok";
-//                Log.d("meows","time: "+ vectorSVM.time + " loc: " + vectorSVM.curLat + " " + vectorSVM.curLong);
+        if (intent != null) {
+            if (alive)
+            {
+                switch (intent.getStringExtra("status")) {
+                    case "UPDATE_DB":
+                        updateFromDB();
+                        break;
+                    case "YES_REQUEST":
+
+                        newPrecedent();
+                        vectorSVM.label = "ok";
+    //                Log.d("meows","time: "+ vectorSVM.time + " loc: " + vectorSVM.curLat + " " + vectorSVM.curLong);
 
 
-                curID = intent.getIntExtra("id",-1);
-                if (curID==-1)
-                {
-                    break;
+                        curID = intent.getIntExtra("id", -1);
+                        if (curID == -1) {
+                            break;
+                        }
+                        dbPrecedents.addPrecedent(vectorSVM, curID);
+                        updateFromDB();
+                        break;
+                    case "NO_REQUEST":
+                        newPrecedent();
+                        vectorSVM.label = "no";
+                        curID = intent.getIntExtra("id", -1);
+                        if (curID == -1) {
+                            break;
+                        }
+                        dbPrecedents.addPrecedent(vectorSVM, curID);
+
+                        updateFromDB();
+                        break;
+                    case "KILL":
+                        needKill = true;
+                        stopForeground(true);
+                        stopSelf();
                 }
-                dbPrecedents.addPrecedent(vectorSVM,curID);
-                services.get(curID).setDelay();
-                updateFromDB();
-                break;
-            case "NO_REQUEST":
-                newPrecedent();
-                vectorSVM.label = "no";
-                curID = intent.getIntExtra("id",-1);
-                if (curID==-1)
-                {
-                    break;
-                }
-                dbPrecedents.addPrecedent(vectorSVM,curID);
-                services.get(curID).setDelay();
-
-                updateFromDB();
-                break;
+            }
         }
-
         return START_STICKY;
     }
+
     public boolean testVector(int id)
     {
         if (!services.get(id).clustering.trained)
@@ -183,12 +253,19 @@ public class AddInfoService extends Service {
             if (dmin > timeMetric.getDist(vectorSVM,preced.get(i)))
             {
                 dmin = timeMetric.getDist(vectorSVM,preced.get(i));
+                dminInf = preced.get(i);
             }
         }
+        Toast.makeText(getApplicationContext(),"l: " + dminInf.label + ", d: " + dmin,Toast.LENGTH_SHORT).show();
         return dmin;
     }
     public void updateFromDB()
     {
+        if (dbPrecedents == null)
+        {
+            dbPrecedents = new DBPrecedents(getApplicationContext());
+            services = dbPrecedents.loadServices();
+        }
         ArrayList<SmartService> se = dbPrecedents.loadServices();
 
         for (int i = 0; i < se.size(); i++) {
@@ -201,7 +278,7 @@ public class AddInfoService extends Service {
                 services.get(i).updateService(se.get(i));
 
             }
-            SmartServiceClustering clustering = new SmartServiceClustering(dbPrecedents.loadPrecedents(i));
+            SmartServiceClustering clustering = new SmartServiceClustering(dbPrecedents.loadPrecedents(services.get(i).id));
             TimeMetric timeMetric = new TimeMetric();
             clustering.run(timeMetric);
             services.get(i).clustering = clustering;
@@ -211,11 +288,20 @@ public class AddInfoService extends Service {
     }
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        if (timer != null) {
-            timer.cancel();
-        }
         dbPrecedents.close();
+        Log.d("meow","OnDestroy called: " + needKill.toString());
+
+        if (!needKill)
+        {
+            getBackToLife();
+        }
+        else
+        {
+            Log.d("meow","I am Destroyed");
+
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
+
     }
 
     @Override
@@ -239,21 +325,22 @@ public class AddInfoService extends Service {
     {
         if (lastLocation != null)
         {
+
+            Log.d("meow","I work");
             if (lastLocation.getAccuracy()>45)
             {
                 return;
             }
             newPrecedent();
 //                    SmartService smartService = services.get(0);
-            Log.d("meow","i work");
             if (vectorSVM.lastLong != 1000.0) {
 //                        Log.d("meow","I am working");
                 for (int i = 0; i < services.size(); i++) {
-                    testVector(i);
+                    debug_computeDistnace(i);
                     if (services.get(i).isReload && testVector(i)) {
                         Calendar rightNow = Calendar.getInstance();
 
-                        Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: "  +  debug_computeDistnace(i));
+                        Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: kavo");
                         services.get(i).execute();
                     }
                 }
@@ -285,7 +372,7 @@ public class AddInfoService extends Service {
         private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 0 meters
 
         // The minimum time between updates in milliseconds
-        private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 min
+        private static final long MIN_TIME_BW_UPDATES = 1000 * 3; // 1 min
 
         // Declaring a Location Manager
         protected LocationManager locationManager;

@@ -25,6 +25,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.jar.Attributes;
 
 public class CreateServiceActivity extends AppCompatActivity {
 
@@ -33,9 +34,13 @@ public class CreateServiceActivity extends AppCompatActivity {
     ArrayList<SmartService> services;
     String[] tasksNames = {"Звонок","СМС"};
     int taskType;
+    int service_id;
+    int service_ind;
     LinearLayout inputFields;
     DBPrecedents dbPrecedents;
     ServiceTask curTask;
+
+    EditText nameEdit;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +48,30 @@ public class CreateServiceActivity extends AppCompatActivity {
         dbPrecedents = new DBPrecedents(getApplicationContext());
         services = dbPrecedents.loadServices();
 
+        Intent intent = getIntent();
+        service_id = intent.getIntExtra("service_id",-1);
+        for (int i = 0; i < services.size(); i++) {
+            if (service_id == services.get(i).id)
+            {
+                service_ind = i;
+                LinearLayout l = (LinearLayout) findViewById(R.id.status_button);
+                Button b = new Button(this);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+                params.weight = 0.5f;
+                b.setText("Удалить");
+                b.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dbPrecedents.changeService(service_id,null);
+                        Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                        startActivity(i);
+                    }
+                });
+                b.setLayoutParams(params);
+                l.addView(b);
+                break;
+            }
+        }
         inputFields = (LinearLayout) findViewById(R.id.input_fields);
 
         Spinner taskSpinner = (Spinner) findViewById(R.id.tasks);
@@ -63,8 +92,8 @@ public class CreateServiceActivity extends AppCompatActivity {
                     case "Звонок":
                         taskType = 0;
                         LayoutInflater layoutInflater = getLayoutInflater();
-
                         View view1 = layoutInflater.inflate(R.layout.phone_task,inp,true);
+                        nameEdit = (EditText) findViewById(R.id.new_service_name);
                         EditText phoneEdit = (EditText) view1.findViewById(R.id.phoneNumber);
                         phoneEdit.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
 
@@ -78,6 +107,12 @@ public class CreateServiceActivity extends AppCompatActivity {
                                 startActivityForResult(intent, RESULT_PICK_CONTACT);
                             }
                         });
+                        if (service_id!=-1)
+                        {
+
+                            phoneEdit.setText(services.get(service_ind).curTask.getData());
+                            nameEdit.setText(services.get(service_ind).name);
+                        }
 //                        inp.addView(view1);
                         break;
                 }
@@ -90,13 +125,49 @@ public class CreateServiceActivity extends AppCompatActivity {
             }
         };
         taskSpinner.setOnItemSelectedListener(itemSelectedListener);
+        if (service_id!=-1)
+        {
+            switch (services.get(service_ind).curTask.type)
+            {
+                case "phone":
+                    taskSpinner.setSelection(0);
+                    break;
+            }
+        }
 
         Button confirmButtin = (Button) findViewById(R.id.confirm_button);
         confirmButtin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SmartService smartService;
+                ServiceTask task;
+                String name = nameEdit.getText().toString();
+                switch (taskType)
+                {
+                    case 0:
+                        EditText phoneEdit = (EditText) findViewById(R.id.phoneNumber);
+                        smartService = new SmartService(getApplicationContext(),name);
+                        task = new ServicePhoneTask(getApplicationContext(),phoneEdit.getText().toString());
+                        break;
+                    default:
+                        smartService = null;
+                        task = null;
+                        break;
+                }
+                smartService.addTask(task);
 
-
+                if (service_id == -1)
+                {
+                    dbPrecedents.addService(smartService);
+                }
+                else
+                {
+                    dbPrecedents.changeService(service_id,smartService);
+                }
+                dbPrecedents.close();
+                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                i.putExtra("status","update");
+                startActivity(i);
             }
         });
         setBottomNavigation();
@@ -115,7 +186,8 @@ public class CreateServiceActivity extends AppCompatActivity {
         home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                startActivity(i);
             }
         });
 

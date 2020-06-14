@@ -11,17 +11,18 @@ import java.util.TimerTask;
 public class SmartService {
     private static final int delay = 300000;
 //    private static final int delay = 10000;
+    Boolean isTrackerOn;
     String name;
     ServiceTask curTask;
     SmartServiceClustering clustering;
     Context context;
     boolean isReload;
     int id;
-    public SmartService(Context context, String name, int id) {
+    public SmartService(Context context, String name) {
         this.name = name;
-        this.id = id;
         this.context = context;
         isReload = true;
+        isTrackerOn = false;
     }
     public void addTask(ServiceTask serviceTask)
     {
@@ -51,18 +52,27 @@ public class SmartService {
         this.name = service.name;
         this.curTask = service.curTask;
     }
-    public void yesPrecedent()
-    {
-        Intent tmp = new Intent(context,AddInfoService.class);
-        tmp.putExtra("status","YES_REQUEST");
-        tmp.putExtra("id",this.id);
-        context.startService(tmp);
+    public void yesPrecedent() {
+        if (isTrackerOn)
+        {
+            Log.d("meow", name + " YesPreced");
+            Intent tmp = new Intent(context,AddInfoService.class);
+            tmp.putExtra("status","YES_REQUEST");
+            tmp.putExtra("id",this.id);
+            context.startService(tmp);
+        }
     }
+
     public void noPrecedent()
     {
-        Intent tmp = new Intent(context,AddInfoService.class);
-        tmp.putExtra("status","NO_REQUEST");
-        tmp.putExtra("id",this.id);
-        context.startService(tmp);
+
+        if (isTrackerOn)
+        {
+            Log.d("meow", name + " NoPreced");
+            Intent tmp = new Intent(context, AddInfoService.class);
+            tmp.putExtra("status", "NO_REQUEST");
+            tmp.putExtra("id", this.id);
+            context.startService(tmp);
+        }
     }
 }
