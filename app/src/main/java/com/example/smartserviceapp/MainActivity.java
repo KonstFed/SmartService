@@ -53,16 +53,14 @@ public class MainActivity extends AppCompatActivity {
         SwitchCompat sw = (SwitchCompat) findViewById(R.id.service_switch);
 
         sw.setChecked(isMyServiceRunning(AddInfoService.class));
-
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Intent intent = new Intent(getApplicationContext(), AddInfoService.class);
-
-
                 for (int i = 0; i < services.size(); i++) {
                     services.get(i).isTrackerOn = isChecked;
                 }
+
                 if (isChecked)
                 {
 
@@ -79,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         Intent intent = getIntent();
         if (intent != null)
         {
@@ -95,14 +94,10 @@ public class MainActivity extends AppCompatActivity {
         services = dbPrecedents.loadServices();
         SmartServiceAdapter smartServiceAdapter = new SmartServiceAdapter(this,R.layout.list_item,services);
         servicesList.setAdapter(smartServiceAdapter);
-
-        Intent ift = getIntent();
-        String s = "";
-        if (ift.hasExtra("debug"))
-        {
-            s = ift.getStringExtra("debug");
-
+        for (int i = 0; i < services.size(); i++) {
+            services.get(i).isTrackerOn = sw.isChecked();
         }
+
         InfoPrecedent yi1 = new InfoPrecedent();
         yi1.curLat = 52.211958;
         yi1.curLong = 104.242408;

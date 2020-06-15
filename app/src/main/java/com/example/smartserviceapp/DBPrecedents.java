@@ -5,8 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
 import java.util.ArrayList;
 
 public class DBPrecedents extends SQLiteOpenHelper {
@@ -59,9 +57,6 @@ public class DBPrecedents extends SQLiteOpenHelper {
                     cur.curLat = c.getDouble(v4ColIndex);
                     cur.curLong = c.getDouble(v5ColIndex);
                     tmp.add(cur);
-                } else
-                {
-                    Log.d("meow","kavo db:" + c.getInt(idServiceIndex) + "/find " +serviceId);
                 }
             } while (c.moveToNext());
         }
@@ -80,11 +75,11 @@ public class DBPrecedents extends SQLiteOpenHelper {
         if (smartService == null)
         {
             int deltmp = db.delete(table_name_services,"id = " + id,null);
+            int del = db.delete(table_name_precedents,"id = "+ id,null);
         }
         else
         {
             int tmp = db.update(table_name_services, smartService.curTask.fillCV,"id = ?",new String[]{Integer.toString(id)});
-            Log.d("meow","I updated: " + tmp);
         }
     }
     public ArrayList<SmartService> loadServices()

@@ -116,7 +116,6 @@ public class CreateServiceActivity extends AppCompatActivity {
 //                        inp.addView(view1);
                         break;
                 }
-                Toast.makeText(getApplicationContext(),item,Toast.LENGTH_SHORT).show();
             }
 
             @Override

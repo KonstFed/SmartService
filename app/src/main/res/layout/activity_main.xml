@@ -8,27 +8,33 @@
     tools:context=".MainActivity">
 
 
-
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/service_switch"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/to_switch_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ServiceSwitch"
-        android:checked="false"
-        android:text="Отслеживание"
-        android:textSize="20sp"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/margin_field"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/margin_field"
         android:layout_marginRight="@dimen/margin_field"
-        android:layout_marginLeft="20dp"
-        />
+        android:background="@drawable/tracker_switch_drawable">
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/service_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/ServiceSwitch"
+            android:checked="false"
+            android:text="Отслеживание"
+            android:textSize="20sp"
+            android:padding="@dimen/margin_field"
+            />
+    </LinearLayout>
+
 
 
 
 
     <ListView
         android:id="@+id/services_list"
-        android:layout_below="@+id/service_switch"
+        android:layout_below="@+id/to_switch_layout"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_above="@+id/bottom_navigation"

@@ -71,7 +71,6 @@ public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
         noPr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 service.noPrecedent();
                 sm.notifyDataSetChanged();
             }
