@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/item_additional_field"
+    android:paddingBottom="10dp"
+    >
+    <LinearLayout
+        android:id="@+id/task_field_task"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.8"
+            android:layout_height="match_parent"
+            style="@style/AdditionalFieldText"
+            android:text="Тип задачи"
+            />
+        <TextView
+            android:id="@+id/type_task"
+            android:layout_width="0dp"
+            android:layout_weight="0.2"
+            android:layout_height="match_parent"
+            style="@style/ExplainText"
+            android:textSize="20sp"
+            android:text = "Звонок"
+            android:layout_marginRight="10dp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/yes_precedent_field_task"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.8"
+            android:layout_height="match_parent"
+            style="@style/AdditionalFieldText"
+            android:text="Успешные прецеденты"
+            />
+        <TextView
+                android:id="@+id/yes_precedent_number_task"
+            android:layout_width="0dp"
+            android:layout_weight="0.2"
+            android:layout_height="match_parent"
+            style="@style/ExplainText"
+            android:textSize="20sp"
+            android:layout_marginRight="10dp"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/no_precedent_field_task"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.8"
+            android:layout_height="match_parent"
+            style="@style/AdditionalFieldText"
+            android:text="Не успешные прецеденты"
+            />
+        <TextView
+            android:id="@+id/no_precedent_number_task"
+            android:layout_width="0dp"
+            android:layout_weight="0.2"
+            android:layout_height="match_parent"
+            style="@style/ExplainText"
+            android:textSize="20sp"
+            android:layout_marginRight="10dp"
+            />
+
+</LinearLayout>
+</LinearLayout>

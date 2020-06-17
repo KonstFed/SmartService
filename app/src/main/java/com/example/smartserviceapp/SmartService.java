@@ -3,6 +3,7 @@ package com.example.smartserviceapp;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Adapter;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -57,7 +58,6 @@ public class SmartService {
         Log.d("meow","yes preced: " + isTrackerOn);
         if (isTrackerOn)
         {
-            Toast.makeText(context,"YES PRECED ",Toast.LENGTH_SHORT).show();
 
             Log.d("meow", name + " YesPreced");
             Intent tmp = new Intent(context,AddInfoService.class);
@@ -73,7 +73,6 @@ public class SmartService {
 
         if (isTrackerOn)
         {
-            Toast.makeText(context,"NO PRECED " + isTrackerOn,Toast.LENGTH_SHORT).show();
 
             Log.d("meow", name + " NoPreced");
             Intent tmp = new Intent(context, AddInfoService.class);

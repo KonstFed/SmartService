@@ -41,7 +41,7 @@ import java.util.TimerTask;
 import static com.example.smartserviceapp.MainActivity.CHANNEL_ID;
 
 public class AddInfoService extends Service {
-    private static final long interval  = 1000*10;
+    private static final long interval  = 1000;
     private static final int notif_id = 145;
     int currentTime;
     private Location lastLocation;
@@ -113,9 +113,9 @@ public class AddInfoService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Foreground Service")
-                .setContentText("volt is cute")
-                .setSmallIcon(R.drawable.ic_stats)
+                .setContentTitle(getResources().getString(R.string.app_name))
+                .setContentText("Tracker is on")
+                .setSmallIcon(R.drawable.ic_s_logo_1)
                 .setContentIntent(pendingIntent)
                 .build();
         startForeground(notif_id, notification);
@@ -127,8 +127,9 @@ public class AddInfoService extends Service {
             return;
         }
         LocationRequest locationRequest =   new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(interval);
+
         fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,Looper.myLooper());
     }
     @Override
@@ -152,6 +153,16 @@ public class AddInfoService extends Service {
 
 
     }
+    private void messageToMainActivity(String extra, String data)
+    {
+
+        Intent intent = new Intent();
+        intent.setAction("toMainActivityInformation");
+        intent.putExtra(extra, data);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        sendBroadcast(intent);
+
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -167,6 +178,10 @@ public class AddInfoService extends Service {
 
                         newPrecedent();
                         vectorSVM.label = "ok";
+                        if (vectorSVM.lastLat == 1000.0)
+                        {
+                            break;
+                        }
     //                Log.d("meows","time: "+ vectorSVM.time + " loc: " + vectorSVM.curLat + " " + vectorSVM.curLong);
 
 
@@ -176,8 +191,10 @@ public class AddInfoService extends Service {
                         }
                         dbPrecedents.addPrecedent(vectorSVM, curID);
                         updateFromDB();
+//                        messageToMainActivity("YES_REQUEST");
                         break;
                     case "NO_REQUEST":
+
                         newPrecedent();
                         vectorSVM.label = "no";
                         curID = intent.getIntExtra("id", -1);
@@ -187,6 +204,8 @@ public class AddInfoService extends Service {
                         dbPrecedents.addPrecedent(vectorSVM, curID);
 
                         updateFromDB();
+//                        messageToMainActivity("NO_REQUEST");
+
                         break;
                     case "KILL":
                         needKill = true;
@@ -237,11 +256,11 @@ public class AddInfoService extends Service {
         }
         return false;
     }
-    public double debug_computeDistnace(int id)
+    public String debug_computeDistnace(int id)
     {
         if (!services.get(id).clustering.trained)
         {
-            return -1.0;
+            return "Не кластеризовался";
         }
         ArrayList<InfoPrecedent> preced =  services.get(id).clustering.precedents;
         TimeMetric timeMetric = new TimeMetric();
@@ -256,8 +275,10 @@ public class AddInfoService extends Service {
                 dminInf = preced.get(i);
             }
         }
-        Toast.makeText(getApplicationContext(),"l: " + dminInf.label + ", d: " + dmin,Toast.LENGTH_SHORT).show();
-        return dmin;
+        Log.d("meow",services.get(id).name + ": " + "l: " + dminInf.label + ", d: " + dmin);
+        String deb = services.get(id).name + ": " + "label: " + dminInf.label + ", dist: " + dmin;
+//        Toast.makeText(getApplicationContext(),"l: " + dminInf.label + ", d: " + dmin,Toast.LENGTH_SHORT).show();
+        return deb;
     }
     public void updateFromDB()
     {
@@ -268,23 +289,46 @@ public class AddInfoService extends Service {
         }
         ArrayList<SmartService> se = dbPrecedents.loadServices();
 
-        for (int i = 0; i < se.size(); i++) {
-            if (i == services.size())
-            {
-                services.add(se.get(i));
-            }
-            else
-            {
-                services.get(i).updateService(se.get(i));
+//        for (int i = 0; i < se.size(); i++) {
+//            if (i == services.size())
+//            {
+//                tmp.add(se.get(i));
+//            }
+//            else
+//            {
+//                tmp.add(services.get(i));
+//                tmp.get(tmp.size()-1).updateService(se.get(i));
+//            }
+//            SmartServiceClustering clustering = new SmartServiceClustering(dbPrecedents.loadPrecedents(tmp.get(i).id));
+//            TimeMetric timeMetric = new TimeMetric();
+//            clustering.run(timeMetric);
+//            tmp.get(i).clustering = clustering;
+//        }
+//        services = new ArrayList<>(tmp);
 
+        ArrayList<SmartService> tmp = new ArrayList<>();
+
+        for (int i = 0; i < se.size(); i++) {
+            boolean isAdd = false;
+            for (int j = 0; j < services.size(); j++) {
+                if (se.get(i).id == services.get(j).id)
+                {
+                    isAdd = true;
+                    tmp.add(services.get(j));
+                    tmp.get(tmp.size()-1).updateService(se.get(i));
+                }
             }
-            SmartServiceClustering clustering = new SmartServiceClustering(dbPrecedents.loadPrecedents(services.get(i).id));
+            if (!isAdd)
+            {
+                tmp.add(se.get(i));
+            }
+            SmartServiceClustering clustering = new SmartServiceClustering(dbPrecedents.loadPrecedents(tmp.get(tmp.size()-1).id));
             TimeMetric timeMetric = new TimeMetric();
             clustering.run(timeMetric);
-            services.get(i).clustering = clustering;
-
-
+            tmp.get(tmp.size()-1).clustering = clustering;
         }
+        services = new ArrayList<>(tmp);
+        Log.d("meow","services: " + services.size());
     }
     @Override
     public void onDestroy() {
@@ -326,29 +370,36 @@ public class AddInfoService extends Service {
         if (lastLocation != null)
         {
 
-            Log.d("meow","I work");
-            if (lastLocation.getAccuracy()>45)
+            if (lastLocation.getAccuracy()>45 || lastLocation.getAccuracy() == -1)
             {
                 return;
             }
-            newPrecedent();
+
+//            Log.d("meow","I work: " + lastLocation.getAccuracy());
+            if (services.size() != 0) {
+                newPrecedent();
+                String m = debug_computeDistnace(0);
+                String thresh = String.format("%.2f", services.get(0).clustering.thresh);
+                messageToMainActivity("debug", "Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
+                Log.d("meow","Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
 //                    SmartService smartService = services.get(0);
-            if (vectorSVM.lastLong != 1000.0) {
+                if (vectorSVM.lastLong != 1000.0) {
 //                        Log.d("meow","I am working");
-                for (int i = 0; i < services.size(); i++) {
-                    debug_computeDistnace(i);
-                    if (services.get(i).isReload && testVector(i)) {
-                        Calendar rightNow = Calendar.getInstance();
+                    for (int i = 0; i < services.size(); i++) {
+                        if (testVector(i)) {
+                            Toast.makeText(getApplicationContext(), "I pass: " + services.get(i).name, Toast.LENGTH_SHORT).show();
+                        }
+                        if (services.get(i).isReload && testVector(i)) {
+                            Calendar rightNow = Calendar.getInstance();
 
-                        Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: kavo");
-                        services.get(i).execute();
+                            Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: kavo");
+                            services.get(i).execute();
+                        }
                     }
-                }
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(),"LOC:WORK",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "LOC:WORK", Toast.LENGTH_SHORT).show();
 
+                }
             }
         }
     }

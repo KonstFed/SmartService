@@ -2,44 +2,51 @@ package com.example.smartserviceapp;
 
 import android.Manifest;
 import android.app.ActivityManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
-import android.provider.SyncStateContract;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Observer {
+    public static boolean isVisible = true;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
-    private final int REQUEST_CODE_NEW_SERVICE = 1;
-    private final int OK_RESULT = 1;
-    ListView servicesList;
+    public static final String APP_PREFERENCES = "mysettings";
+    public static final String APP_PREFERENCES_DEBUG = "debug"; // имя кота
+    public static final String APP_PREFERENCES_TRACKER = "tracker"; // имя кота
     private ArrayList<SmartService> services;
-
+    private boolean debug;
+    SharedPreferences mySharedPreferences;
+    ListView servicesList;
+    SwitchCompat sw;
     DBPrecedents dbPrecedents;
+    TextView debugView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        isVisible = true;
         servicesList = (ListView) findViewById(R.id.services_list);
+        dbPrecedents = new DBPrecedents(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             String[] mre = new String[4];
@@ -50,7 +57,16 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(mre, 4);
 
         }
-        SwitchCompat sw = (SwitchCompat) findViewById(R.id.service_switch);
+        mySharedPreferences =  getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+        debug = mySharedPreferences.getBoolean(APP_PREFERENCES_DEBUG,false);
+        services = dbPrecedents.loadServices();
+
+        if (debug) {
+            debugView = new TextView(this);
+            LinearLayout l = findViewById(R.id.to_switch_layout);
+            l.addView(debugView);
+        }
+        sw = (SwitchCompat) findViewById(R.id.service_switch);
 
         sw.setChecked(isMyServiceRunning(AddInfoService.class));
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -60,13 +76,16 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < services.size(); i++) {
                     services.get(i).isTrackerOn = isChecked;
                 }
-
+                SharedPreferences.Editor e =  mySharedPreferences.edit();
+                e.putBoolean(APP_PREFERENCES_TRACKER,isChecked);
+                e.apply();
                 if (isChecked)
                 {
 
 //                    intent.putExtra("status","UPDATE_DB");
 ////                    ContextCompat.startForegroundService(getApplicationContext(), intent);
 //                    startService(intent);
+
                     startForegroundService();
                 }
                 else
@@ -78,25 +97,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Intent intent = getIntent();
-        if (intent != null)
+        if (mySharedPreferences.contains(APP_PREFERENCES_TRACKER))
         {
-            if (intent.hasExtra("status"))
-            {
-                if (intent.getStringExtra("status").equals("update") && sw.isChecked())
-                {
-                    startForegroundService();
-                }
-            }
+            sw.setChecked(mySharedPreferences.getBoolean(APP_PREFERENCES_TRACKER,false));
         }
-        dbPrecedents = new DBPrecedents(this);
+        updateAdapter();
         Log.d("meow","db precedents" + dbPrecedents.howMuch());
-        services = dbPrecedents.loadServices();
-        SmartServiceAdapter smartServiceAdapter = new SmartServiceAdapter(this,R.layout.list_item,services);
-        servicesList.setAdapter(smartServiceAdapter);
-        for (int i = 0; i < services.size(); i++) {
-            services.get(i).isTrackerOn = sw.isChecked();
-        }
+
 
         InfoPrecedent yi1 = new InfoPrecedent();
         yi1.curLat = 52.211958;
@@ -155,12 +162,22 @@ public class MainActivity extends AppCompatActivity {
 //            dbPrecedents.addPrecedent(ni3, 0);
 //        }
 
+        ObservableObject.getInstance().addObserver(this);
 
 
         setBottomNavigation();
 
 
     }
+    private void updateAdapter()
+    {
+        SmartServiceAdapter smartServiceAdapter = new SmartServiceAdapter(this,R.layout.list_item,services);
+        servicesList.setAdapter(smartServiceAdapter);
+        for (int i = 0; i < services.size(); i++) {
+            services.get(i).isTrackerOn = sw.isChecked();
+        }
+    }
+
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -187,7 +204,6 @@ public class MainActivity extends AppCompatActivity {
         ImageButton add_service = (ImageButton) findViewById(R.id.new_service);
         ImageButton settings = (ImageButton) findViewById(R.id.settings);
 
-        home.setImageResource(R.drawable.ic_home_black_24dp);
         add_service.setImageResource(R.drawable.ic_add_box_anactive_24dp);
         settings.setImageResource(R.drawable.ic_settings_inactive_24dp);
 
@@ -195,34 +211,50 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(),CreateServiceActivity.class);
-
+                startActivity(i);
+            }
+        });
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
                 startActivity(i);
             }
         });
 
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isVisible = false;
 
-//    @Override
-//    protected void onDestroy() {
-//        Log.d("meow","MainActivity: onDestroy");
-//        Intent broadcastIntent = new Intent();
-//        broadcastIntent.setAction("restartservice");
-//        broadcastIntent.setClass(this, Restarter.class);
-//        this.sendBroadcast(broadcastIntent);
-//        Intent i = new Intent(this,AddInfoService.class);
-//        stopService(i);
-//        super.onDestroy();
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        Log.d("meow","MainActivity: onStop");
-//        Intent broadcastIntent = new Intent();
-//        broadcastIntent.setAction("restartservice");
-//        broadcastIntent.setClass(getApplicationContext(), Restarter.class);
-//        this.sendBroadcast(broadcastIntent);
-//        Intent i = new Intent(this,AddInfoService.class);
-//        stopService(i);
-//        super.onStop();
-//    }
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        Intent i = (Intent) arg;
+        if (i.hasExtra("status")) {
+            String com = i.getStringExtra("status");
+
+            Log.d("meow", "got update");
+            switch (com) {
+                case "update":
+                    updateAdapter();
+                    Intent is = new Intent(this, AddInfoService.class);
+                    is.putExtra("status", "UPDATE_DB");
+                    this.startService(is);
+                    break;
+
+
+            }
+        }
+        else if (i.hasExtra("debug"))
+        {
+
+            if (debugView != null) {
+                debugView.setText(i.getStringExtra("debug"));
+            }
+
+        }
+    }
 }

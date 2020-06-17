@@ -2,6 +2,7 @@ package com.example.smartserviceapp;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -69,18 +70,20 @@ public class DBPrecedents extends SQLiteOpenHelper {
         db.insert(table_name_services, null, smartService.curTask.fillCV);
         db.setTransactionSuccessful();
         db.endTransaction();
+        messageToMainActivity("update");
     }
 
     public void changeService(int id, SmartService smartService) {
         if (smartService == null)
         {
             int deltmp = db.delete(table_name_services,"id = " + id,null);
-            int del = db.delete(table_name_precedents,"id = "+ id,null);
+            int del = db.delete(table_name_precedents,"service_id = "+ id,null);
         }
         else
         {
             int tmp = db.update(table_name_services, smartService.curTask.fillCV,"id = ?",new String[]{Integer.toString(id)});
         }
+        messageToMainActivity("update");
     }
     public ArrayList<SmartService> loadServices()
     {
@@ -156,6 +159,8 @@ public class DBPrecedents extends SQLiteOpenHelper {
         db.insert(table_name_precedents, null, cv);
         db.setTransactionSuccessful();
         db.endTransaction();
+
+        messageToMainActivity("update");
     }
     public void createTableServices()
     {
@@ -202,5 +207,15 @@ public class DBPrecedents extends SQLiteOpenHelper {
     {
         db.execSQL("drop table "+table_name_precedents);
         createTablePrecedents();
+    }
+    private void messageToMainActivity(String s)
+    {
+
+        Intent intent = new Intent();
+        intent.setAction("toMainActivityInformation");
+        intent.putExtra("status", s);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        context.sendBroadcast(intent);
+
     }
 }

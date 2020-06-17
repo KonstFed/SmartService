@@ -3,22 +3,21 @@ package com.example.smartserviceapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.example.smartserviceapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
+
 
 public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
     SmartServiceAdapter sm;
@@ -44,37 +43,41 @@ public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
 
         View view=inflater.inflate(this.layout, parent, false);
         TextView textView = (TextView) view.findViewById(R.id.service_name);
-        ImageButton yesPr = (ImageButton) view.findViewById(R.id.service_button_yes);
+        final ImageButton yesPr = (ImageButton) view.findViewById(R.id.service_button_yes);
         final ImageButton noPr = (ImageButton) view.findViewById(R.id.service_button_no);
         final ImageButton redactB = (ImageButton) view.findViewById(R.id.rewrite);
-        ImageButton stats = (ImageButton) view.findViewById(R.id.statistics);
+        final ImageButton stats = (ImageButton) view.findViewById(R.id.statistics);
         final SmartService service = services.get(position);
 
         LinearLayout lin = (LinearLayout) view.findViewById(R.id.infification_id);
+        final LinearLayout additionalField = (LinearLayout) view.findViewById(R.id.additional_info_panel);
         ArrayList<InfoPrecedent> list  =dbPrecedents.loadPrecedents(service.id);
         boolean isNoPr = false;
         boolean isYesPr = false;
-
+        int amPrY = 0;
+        int amPrN = 0;
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).label.equals("ok")) isYesPr = true;
-            else if (list.get(i).label.equals("no")) isNoPr = true;
+            if (list.get(i).label.equals("ok"))
+            {
+                amPrY++;
+                isYesPr = true;
+            }
+            else if (list.get(i).label.equals("no"))
+            {
+                amPrN++;
+                isNoPr = true;
+            }
             if (isYesPr && isNoPr)
             {
                 lin.setBackgroundResource(R.drawable.ready_top_bar);
-                break;
             }
         }
-
+        final int amountNoPr = amPrN;
+        final int amountYesPr = amPrY;
 
 
         textView.setText(service.name);
-        noPr.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                service.noPrecedent();
-                sm.notifyDataSetChanged();
-            }
-        });
+
         noPr.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -95,6 +98,13 @@ public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
                 return false;
             }
         });
+        noPr.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                service.noPrecedent();
+                sm.notifyDataSetChanged();
+            }
+        });
         yesPr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -113,11 +123,39 @@ public class SmartServiceAdapter extends ArrayAdapter<SmartService> {
 
             }
         });
+
+
         stats.setOnClickListener(new View.OnClickListener() {
+            Boolean flag =true;
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(),"stats",Toast.LENGTH_SHORT).show();
+                if (flag)
+                {
+                    View vie = inflater.inflate(R.layout.additional_item_phone,null);
+                    LinearLayout typeLayout = (LinearLayout) vie.findViewById(R.id.task_field_task);
+                    TextView type =  (TextView) typeLayout.findViewById(R.id.type_task);
+                    type.setText(service.curTask.type);
 
+//                    LinearLayout yesLayout = (LinearLayout) vie.findViewById(R.id.yes_precedent_field_task);
+                    TextView yesPrText = (TextView) vie.findViewById(R.id.yes_precedent_number_task);
+                    yesPrText.setText(Integer.toString(amountYesPr));
+
+//                    LinearLayout noLayout = (LinearLayout) vie.findViewById(R.id.no_precedent_field_task);
+                    TextView noPrText = (TextView) vie.findViewById(R.id.no_precedent_number_task);
+                    noPrText.setText(Integer.toString(amountNoPr));
+
+                    additionalField .addView(vie);
+                    stats.setImageResource(R.drawable.ic_drop_up);
+
+                    flag = false;
+                }
+                else
+                {
+                    additionalField.removeAllViews();
+                    stats.setImageResource(R.drawable.ic_drop_down);
+
+                    flag = true;
+                }
             }
         });
 
