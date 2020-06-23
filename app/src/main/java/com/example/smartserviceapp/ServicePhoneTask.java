@@ -36,6 +36,7 @@ public class ServicePhoneTask extends ServiceTask {
             return;
         }
         Intent myIntent = new Intent(Intent.ACTION_CALL,Uri.parse("tel:"+phone));
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(myIntent);
 
     }

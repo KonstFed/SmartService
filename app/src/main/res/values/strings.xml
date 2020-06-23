@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">СatP</string>
+    <string name="app_name">Sm</string>
     <string name="new_activity_name">Новая запись</string>
     <string-array name="tasks">
         <item>Звонок</item>

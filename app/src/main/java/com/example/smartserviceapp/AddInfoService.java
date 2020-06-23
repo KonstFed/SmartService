@@ -385,7 +385,7 @@ public class AddInfoService extends Service {
                 String thresh = String.format("%.2f", services.get(0).clustering.thresh);
                 messageToMainActivity("debug", "Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
                 Log.d("meow","Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
-                Toast.makeText(getApplicationContext(),"Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong,Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(),"Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong,Toast.LENGTH_SHORT).show();
 //                    SmartService smartService = services.get(0);
                 if (vectorSVM.lastLong != 1000.0) {
 //                        Log.d("meow","I am working");
@@ -396,14 +396,20 @@ public class AddInfoService extends Service {
                             }
                             if (services.get(i).isReload && testVector(i)) {
                                 Calendar rightNow = Calendar.getInstance();
+                                try {
 
-                                Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: kavo");
-                                services.get(i).execute();
+                                    Log.d("meow-calls", "service: " + i + ", time: " + rightNow.getTime().toString() + ", thresh: " + services.get(i).clustering.thresh + ", dist: kavo");
+                                    services.get(i).execute();
+                                }
+                                catch (Exception e)
+                                {
+                                    Toast.makeText(getApplicationContext(),"s-call error"+ e.toString(),Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
                         catch (Exception e)
                         {
-                            Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_SHORT).show();
                         }
                     }
                 } else {
