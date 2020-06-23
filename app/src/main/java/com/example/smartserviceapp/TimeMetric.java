@@ -10,7 +10,7 @@ public class TimeMetric extends Metric {
         float[] s = new float[1];
         Location.distanceBetween(a.curLat,a.curLong,b.curLat,b.curLong,s);
 //        double dist = Math.sqrt(Math.pow(a.curLat-b.curLat,2) + Math.pow(a.lastLat - b.lastLat,2));
-        double d = s[0] + Math.max(0,a.accuracyRadius) + Math.max(0.0,b.accuracyRadius);
+        double d = s[0] + (Math.max(0,a.accuracyRadius) + Math.max(0.0,b.accuracyRadius))/2;
         return d;
 
     }

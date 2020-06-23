@@ -189,6 +189,13 @@ public class CreateServiceActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getApplicationContext(),SettingsActivity.class);
+                startActivity(i);
+            }
+        });
 
     }
 
