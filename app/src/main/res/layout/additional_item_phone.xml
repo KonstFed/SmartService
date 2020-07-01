@@ -39,7 +39,7 @@
             android:layout_weight="0.8"
             android:layout_height="match_parent"
             style="@style/AdditionalFieldText"
-            android:text="Успешные прецеденты"
+            android:text="Положительные прецеденты"
             />
         <TextView
                 android:id="@+id/yes_precedent_number_task"
@@ -61,7 +61,7 @@
             android:layout_weight="0.8"
             android:layout_height="match_parent"
             style="@style/AdditionalFieldText"
-            android:text="Не успешные прецеденты"
+            android:text="Отрицательные прецеденты"
             />
         <TextView
             android:id="@+id/no_precedent_number_task"

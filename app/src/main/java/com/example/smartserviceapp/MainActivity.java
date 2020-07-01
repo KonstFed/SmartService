@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -62,9 +63,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
         services = dbPrecedents.loadServices();
 
         if (debug) {
-            debugView = new TextView(this);
-            LinearLayout l = findViewById(R.id.to_switch_layout);
-            l.addView(debugView);
+            debugView = (TextView) findViewById(R.id.debug_text);
+
         }
         sw = (SwitchCompat) findViewById(R.id.service_switch);
 
@@ -252,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
         {
 
             if (debugView != null) {
+                Log.d("meow","MainActivity" + i.getStringExtra("debug"));
                 debugView.setText(i.getStringExtra("debug"));
             }
 

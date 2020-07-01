@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -41,6 +42,9 @@ import java.util.TimerTask;
 import static com.example.smartserviceapp.MainActivity.CHANNEL_ID;
 
 public class AddInfoService extends Service {
+    public static final String APP_PREFERENCES = "mysettings";
+    public static final String APP_PREFERENCES_DEBUG = "debug"; // имя кота
+    public static final String APP_PREFERENCES_TRACKER = "tracker"; // имя кота
     private static final long interval  = 1000;
     private static final int notif_id = 145;
     int currentTime;
@@ -53,6 +57,8 @@ public class AddInfoService extends Service {
     DBPrecedents dbPrecedents;
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationCallback locationCallback;
+    SharedPreferences sh;
+    Boolean debug = false;
     Boolean needKill;
     Boolean alive = false;
     @Override
@@ -72,7 +78,11 @@ public class AddInfoService extends Service {
 //            setForeground();
 //        else
 //            startForeground(1, new Notification());
-
+        sh = getSharedPreferences(APP_PREFERENCES,Context.MODE_PRIVATE);
+        if (sh.contains(APP_PREFERENCES_DEBUG))
+        {
+            debug = sh.getBoolean(APP_PREFERENCES_DEBUG,false);
+        }
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationCallback =  new LocationCallback()
 
@@ -278,8 +288,12 @@ public class AddInfoService extends Service {
                 dminInf = preced.get(i);
             }
         }
-        Log.d("meow",services.get(id).name + ": " + "l: " + dminInf.label + ", d: " + dmin);
-        String deb = services.get(id).name + ": " + "label: " + dminInf.label + ", dist: " + dmin;
+        String dminstring = String.format("%.2f", dmin);
+        if (debug)
+        {
+            Toast.makeText(getApplicationContext(),services.get(id).clustering.thresh + " / " +  dminstring, Toast.LENGTH_SHORT).show();
+        }
+        String deb = services.get(id).name + ": " + "label: " + dminInf.label + ", dist: " + dminstring;
 //        Toast.makeText(getApplicationContext(),"l: " + dminInf.label + ", d: " + dmin,Toast.LENGTH_SHORT).show();
         return deb;
     }
@@ -385,8 +399,7 @@ public class AddInfoService extends Service {
                 String thresh = String.format("%.2f", services.get(0).clustering.thresh);
                 messageToMainActivity("debug", "Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
                 Log.d("meow","Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong + " thresh:" + thresh + " " + m);
-//                Toast.makeText(getApplicationContext(),"Lat: " + vectorSVM.curLat + "Lon: " + vectorSVM.curLong,Toast.LENGTH_SHORT).show();
-//                    SmartService smartService = services.get(0);
+                    SmartService smartService = services.get(0);
                 if (vectorSVM.lastLong != 1000.0) {
 //                        Log.d("meow","I am working");
                     for (int i = 0; i < services.size(); i++) {

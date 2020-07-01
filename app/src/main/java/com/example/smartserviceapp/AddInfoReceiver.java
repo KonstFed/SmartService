@@ -16,8 +16,8 @@ public class AddInfoReceiver extends BroadcastReceiver {
 //            Toast.makeText(context, "Обнаружено сообщение: " +
 //                            intent.getStringExtra("status"),
 //                    Toast.LENGTH_LONG).show();
-            Log.d("meow", intent.getStringExtra("status"));
         }
+
         ObservableObject.getInstance().updateValue(intent);
 
 

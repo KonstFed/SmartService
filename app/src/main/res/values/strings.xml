@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sm</string>
+    <string name="app_name">Cat Manager</string>
     <string name="new_activity_name">Новая запись</string>
     <string-array name="tasks">
         <item>Звонок</item>

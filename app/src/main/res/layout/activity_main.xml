@@ -26,6 +26,13 @@
             android:textSize="20sp"
             android:padding="@dimen/margin_field"
             />
+        <TextView
+            android:id="@+id/debug_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:layout_marginBottom="15dp"
+            />
     </LinearLayout>
 
 
@@ -57,7 +64,6 @@
             android:layout_height="fill_parent"
             android:minHeight="40dp"
             android:layout_weight="0.2"
-            android:layout_margin="15dp"
             android:src="@drawable/ic_home_black_24dp"/>
         <ImageButton
             android:id="@+id/new_service"
@@ -65,7 +71,6 @@
             android:layout_height="fill_parent"
             android:minHeight="40dp"
             android:layout_weight="0.2"
-            android:layout_margin="15dp"
             style="@style/bottomNavigationButton"
 
             android:src="@drawable/ic_add_box_black_24dp"/>
@@ -76,7 +81,6 @@
             android:layout_height="fill_parent"
             android:minHeight="40dp"
             android:layout_weight="0.2"
-            android:layout_margin="15dp"
             android:src="@drawable/ic_settings_black_24dp"/>
     </LinearLayout>
 ?</RelativeLayout>

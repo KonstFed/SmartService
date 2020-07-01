@@ -60,16 +60,14 @@
             android:orientation="horizontal">
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_weight="0.6"
+                android:layout_weight="0.3"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 >
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:layout_marginLeft="@dimen/margin_field"
-                    android:layout_marginRight="@dimen/margin_field"
+                    android:orientation="horizontal"
                     >
                     <ImageButton
 
@@ -80,15 +78,15 @@
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_play_arrow_black_24dp"
                         android:layout_gravity="center"
-                        
                         />
-
-                    <TextView
-                        style="@style/ExplainText"
+                    <ImageButton
+                        android:id="@+id/service_button_no"
+                        android:background="@drawable/ic_block_black_24dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:text="Вызвать" />
+                        android:layout_marginLeft="25dp"
+                        />
                 </LinearLayout>
 
 
@@ -96,16 +94,17 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-                    <ImageButton
-                        android:id="@+id/service_button_no"
-                        android:background="@drawable/ic_block_black_24dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/ExplainText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        />
-                    <TextView
+                        android:layout_gravity="bottom"
+                        android:layout_marginRight="@dimen/margin_field"
+                        android:text="Вызвать" />
 
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/ExplainText"
