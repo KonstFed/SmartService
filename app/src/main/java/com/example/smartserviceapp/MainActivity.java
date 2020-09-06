@@ -1,11 +1,19 @@
 package com.example.smartserviceapp;
 
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.os.Build;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,12 +29,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+
 
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
+
 
 public class MainActivity extends AppCompatActivity implements Observer {
     public static boolean isVisible = true;
@@ -34,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements Observer {
     public static final String APP_PREFERENCES = "mysettings";
     public static final String APP_PREFERENCES_DEBUG = "debug"; // имя кота
     public static final String APP_PREFERENCES_TRACKER = "tracker"; // имя кота
+    private final int foregroundServiceCode = 100;
+    private final int CallPhoneCode = 101;
+    private final int accessLocationCode = 102;
     private ArrayList<SmartService> services;
     private boolean debug;
     SharedPreferences mySharedPreferences;
@@ -41,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements Observer {
     SwitchCompat sw;
     DBPrecedents dbPrecedents;
     TextView debugView;
+
+    boolean gpsStatus;
+    boolean networkStatus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +63,16 @@ public class MainActivity extends AppCompatActivity implements Observer {
         servicesList = (ListView) findViewById(R.id.services_list);
         dbPrecedents = new DBPrecedents(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//        requestPermissionDialog(Manifest.permission.FOREGROUND_SERVICE,foregroundServiceCode,"Cat needs your help","Разрешите пожалуста service");
+//        requestPermissionDialog(Manifest.permission.ACCESS_FINE_LOCATION , accessLocationCode,"Cat needs your help","Разрешите пожалуста location");
+
+        checkLocationStatus();
+        if (!gpsStatus || !networkStatus)
+        {
+            Intent intent1 = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent1);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             String[] mre = new String[4];
             mre[0] = Manifest.permission.ACCESS_FINE_LOCATION;
             mre[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
@@ -105,69 +128,66 @@ public class MainActivity extends AppCompatActivity implements Observer {
         Log.d("meow","db precedents" + dbPrecedents.howMuch());
 
 
-        InfoPrecedent yi1 = new InfoPrecedent();
-        yi1.curLat = 52.211958;
-        yi1.curLong = 104.242408;
-        yi1.label = "ok";
-
-        InfoPrecedent yi2 = new InfoPrecedent();
-        yi2.curLat = 52.211751;
-        yi2.curLong = 104.242310;
-        yi2.label = "ok";
-
-        InfoPrecedent yi3 = new InfoPrecedent();
-        yi3.curLat = 52.211400;
-        yi3.curLong = 104.241915;
-        yi3.label = "ok";
-
-        InfoPrecedent yi4 = new InfoPrecedent();
-        yi4.curLat = 52.210110;
-        yi4.curLong = 104.242506;
-        yi4.label = "ok";
-
-        InfoPrecedent yi5 = new InfoPrecedent();
-        yi5.curLat = 52.210357;
-        yi5.curLong = 104.242450;
-        yi5.label = "ok";
-
-        InfoPrecedent yi6 = new InfoPrecedent();
-        yi6.curLat = 52.210176;
-        yi6.curLong = 104.242489;
-        yi6.label = "ok";
-
-        InfoPrecedent ni1 = new InfoPrecedent();
-        ni1.curLat = 52.211089;
-        ni1.curLong = 104.242313;
-        ni1.label  = "no";
-
-        InfoPrecedent ni2 = new InfoPrecedent();
-        ni2.curLat = 52.210927;
-        ni2.curLong = 104.242352;
-        ni2.label  = "no";
-
-        InfoPrecedent ni3 = new InfoPrecedent();
-        ni3.curLat = 52.210793;
-        ni3.curLong = 104.242377;
-        ni3.label  = "no";
-//        dbPrecedents.clearPrecedents();
-//        if (dbPrecedents.howMuch()==0) {
-//            dbPrecedents.addPrecedent(yi1, 0);
-//            dbPrecedents.addPrecedent(yi2, 0);
-//            dbPrecedents.addPrecedent(yi3, 0);
-//            dbPrecedents.addPrecedent(yi4, 0);
-//            dbPrecedents.addPrecedent(yi5, 0);
-//            dbPrecedents.addPrecedent(yi6, 0);
-//            dbPrecedents.addPrecedent(ni1, 0);
-//            dbPrecedents.addPrecedent(ni2, 0);
-//            dbPrecedents.addPrecedent(ni3, 0);
-//        }
-
         ObservableObject.getInstance().addObserver(this);
 
 
         setBottomNavigation();
 
 
+    }
+    private void requestPermissionDialog(final String permission, int answerCode, final String title, final String message)
+    {
+
+
+//        final int answCode = answerCode;
+//        final Context context = this;
+//        if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED)
+//        {
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission))
+//            {
+//                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
+//                alertBuilder.setCancelable(true);
+//                alertBuilder.setTitle(title);
+//                alertBuilder.setMessage(message);
+//                alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
+//                {
+//
+//                    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+//                    public void onClick(DialogInterface dialog, int which)
+//                    {
+////                        ActivityCompat.requestPermissions((Activity) (context), new String[]{permission}, answCode);
+//                        requestPermissions(new String[]{permission},answCode);
+//
+//                    }
+//                });
+//
+//
+//                AlertDialog alert = alertBuilder.create();
+//                alert.show();
+//            }
+//            else
+//                {
+//                    requestPermissions(new String[]{permission},answCode);
+////                    ActivityCompat.requestPermissions((Activity) context, new String[]{permission}, answCode);
+//
+//                }
+//        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == foregroundServiceCode)
+        {
+            Log.d("meow","result code " + resultCode);
+        }
+    }
+
+    private void checkLocationStatus()
+    {
+        LocationManager  locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        assert locationManager != null;
+        gpsStatus= locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        networkStatus = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
     private void updateAdapter()
     {

@@ -45,9 +45,10 @@ public class AddInfoService extends Service {
     public static final String APP_PREFERENCES = "mysettings";
     public static final String APP_PREFERENCES_DEBUG = "debug"; // имя кота
     public static final String APP_PREFERENCES_TRACKER = "tracker"; // имя кота
-    private static final long interval  = 1000;
+    private static final long interval  = 500;
     private static final int notif_id = 145;
     int currentTime;
+    int cntPrecedents;
     private Location lastLocation;
 
     ArrayList<SmartService> services;
@@ -57,6 +58,8 @@ public class AddInfoService extends Service {
     DBPrecedents dbPrecedents;
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationCallback locationCallback;
+    Timer myTimer;
+    TimerTask isLocateTask;
     SharedPreferences sh;
     Boolean debug = false;
     Boolean needKill;
@@ -71,8 +74,15 @@ public class AddInfoService extends Service {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
+        cntPrecedents = 0;
+
         alive = true;
         needKill = false;
+
+        myTimer = new Timer();
+
+
         setForeground();
 //        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
 //            setForeground();
@@ -140,7 +150,7 @@ public class AddInfoService extends Service {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(interval);
 
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,Looper.myLooper());
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,null);
     }
     @Override
     public IBinder onBind(Intent arg0) {
@@ -373,14 +383,23 @@ public class AddInfoService extends Service {
 
     public void newPrecedent()
     {
-
+        cntPrecedents++;
         Calendar rightNow = Calendar.getInstance();
         currentTime = rightNow.get(Calendar.MINUTE) + rightNow.get(Calendar.HOUR_OF_DAY)*60;
         vectorSVM.accuracyRadius = lastLocation.getAccuracy();
         vectorSVM.addNewCoord(lastLocation);
         vectorSVM.time = currentTime;
-//        Toast.makeText(getApplicationContext(),vectorSVM.curLat + " : " + vectorSVM.curLong,Toast.LENGTH_SHORT).show();
-//        Log.d("meow-coord",vectorSVM.curLat + " : " + vectorSVM.curLong);
+        final int taskcnt = cntPrecedents;
+        isLocateTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (taskcnt == cntPrecedents)
+                {
+
+                }
+            }
+        };
+
     }
     private void checkPrecedent()
     {

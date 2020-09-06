@@ -1,12 +1,22 @@
 package com.example.smartserviceapp;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.PhoneNumberFormattingTextWatcher;
@@ -28,7 +38,9 @@ import java.util.ArrayList;
 import java.util.jar.Attributes;
 
 public class CreateServiceActivity extends AppCompatActivity {
-
+    private final int foregroundServiceCode = 100;
+    private final int CallPhoneCode = 101;
+    private final int accessLocationCode = 102;
     private static final int RESULT_PICK_CONTACT = 5;
 
     ArrayList<SmartService> services;
@@ -90,6 +102,7 @@ public class CreateServiceActivity extends AppCompatActivity {
                 switch (item)
                 {
                     case "Звонок":
+
                         taskType = 0;
                         LayoutInflater layoutInflater = getLayoutInflater();
                         View view1 = layoutInflater.inflate(R.layout.phone_task,inp,true);
@@ -144,6 +157,7 @@ public class CreateServiceActivity extends AppCompatActivity {
                 switch (taskType)
                 {
                     case 0:
+
                         EditText phoneEdit = (EditText) findViewById(R.id.phoneNumber);
                         smartService = new SmartService(getApplicationContext(),name);
                         task = new ServicePhoneTask(getApplicationContext(),phoneEdit.getText().toString());
@@ -171,6 +185,8 @@ public class CreateServiceActivity extends AppCompatActivity {
         });
         setBottomNavigation();
     }
+
+
 
     private void setBottomNavigation()
     {
